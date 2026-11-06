@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>La Terre et les animaux</title>
+<style>
+@font-face { font-family: "Fredoka"; font-weight: 600; font-display: swap; src: url("fonts/fredoka-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Nunito"; font-weight: 600; font-display: swap; src: url("fonts/nunito-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Nunito"; font-weight: 800; font-display: swap; src: url("fonts/nunito-latin-800-normal.woff2") format("woff2"); }
+</style>
+<style>
+/* Concept : un carnet d'explorateur la nuit, dans la forêt. Un seul décor sombre assumé (vert profond),
+   des accents soleil, ciel et feuille, une carte de quiz centrale, puis la vitrine des badges et l'historique. */
+:root {
+  --bg: #0b1f1c;
+  --surface: #12332e;
+  --surface-2: #1a4640;
+  --line: #2e645b;
+  --fg: #effcf5;
+  --muted: #a8d3c5;
+  --sun: #ffc857;
+  --leaf: #6ee7a0;
+  --sky: #5cc8ff;
+  --coral: #ff8f6b;
+  --violet: #b9a2ff;
+  --good: #4ade9a;
+  --bad: #ff8b8b;
+  --ink: #0c2420;
+  --font-display: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(60rem 30rem at 85% -10%, rgba(255, 200, 87, .14), transparent 60%),
+    radial-gradient(50rem 28rem at -10% 20%, rgba(110, 231, 160, .12), transparent 60%);
+  background-attachment: fixed;
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.5;
+  padding-inline: 1rem;
+  padding-block: 1.5rem 3rem;
+}
+/* Fond d'écran : l'image reste visible en entier, les côtés sont remplis par une version floue et sombre */
+body::before {
+  content: ""; position: fixed; inset: -40px; z-index: -1;
+  background: url("fond.jpg") center / cover no-repeat;
+  filter: blur(28px) brightness(.5);
+}
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: -1;
+  background: linear-gradient(rgba(11, 31, 28, .55), rgba(11, 31, 28, .78)), url("fond.jpg") center / contain no-repeat;
+}
+main { max-width: 40rem; margin-inline: auto; display: flex; flex-direction: column; gap: 2rem; }
+h1, h2 { font-family: var(--font-display); font-weight: 600; letter-spacing: .01em; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.2rem, 9vw, 3.2rem); line-height: 1.05; }
+h1 em { font-style: normal; color: var(--leaf); }
+h2 { font-size: 1.5rem; }
+p { margin: 0; }
+.eyebrow { font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; color: var(--sun); }
+.lead { color: var(--muted); max-width: 34rem; }
+header { display: flex; flex-direction: column; gap: .5rem; }
+.label { font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+button { font: inherit; cursor: pointer; }
+button:focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
+
+/* Choix du thème */
+.themes { display: flex; flex-direction: column; gap: .6rem; }
+.chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+.chip {
+  min-height: 2.9rem; padding-inline: 1.2rem;
+  border-radius: 999px; border: 2px solid var(--line);
+  background: var(--surface); color: var(--fg); font-weight: 800; font-size: 1.05rem;
+}
+.chip[aria-pressed="true"] { background: var(--leaf); border-color: var(--leaf); color: var(--ink); }
+.chip:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Carte de jeu */
+.play {
+  position: relative; background: var(--surface); border: 2px solid var(--line);
+  border-radius: 1.5rem; padding: 1.25rem; min-height: 24rem;
+  display: flex; flex-direction: column; gap: 1rem;
+  box-shadow: 0 0 0 1px rgba(110, 231, 160, .15), 0 18px 50px -20px rgba(110, 231, 160, .4);
+}
+.hud { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; align-items: end; gap: 1rem; }
+.hud > div { display: flex; flex-direction: column; min-width: 0; }
+.clock-val, .score-val { font-family: var(--font-display); font-size: 2.2rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.clock-val { color: var(--sun); }
+.score-val small { font-size: 1.1rem; color: var(--muted); }
+.ghost { background: transparent; color: var(--fg); border: 2px solid var(--line); border-radius: 999px; height: 2.6rem; padding-inline: 1.1rem; font-weight: 800; }
+.ghost:hover { border-color: var(--sky); }
+.segs { display: grid; grid-template-columns: repeat(10, 1fr); gap: .3rem; }
+.segs span { height: .7rem; border-radius: 999px; background: var(--surface-2); transition: background .2s; }
+.segs span.on { background: var(--leaf); }
+.stage { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 1.1rem; text-align: center; }
+.stage[hidden] { display: none; }
+.big-btn {
+  background: var(--sun); color: var(--ink); border: 0; border-radius: 999px;
+  height: 3.4rem; padding-inline: 2rem; font-family: var(--font-display); font-size: 1.3rem; letter-spacing: .02em;
+  box-shadow: 0 6px 0 #b98a1f;
+}
+.big-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #b98a1f; }
+.big-btn.alt { background: var(--leaf); box-shadow: 0 6px 0 #2f9a63; }
+.big-btn.alt:active { box-shadow: 0 3px 0 #2f9a63; }
+.rule { color: var(--muted); max-width: 26rem; }
+
+/* Question et choix */
+#stageQ { align-items: stretch; justify-content: flex-start; text-align: left; }
+.q-tag { align-self: flex-start; font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; color: var(--ink); background: var(--sky); border-radius: 999px; padding: .1rem .75rem; }
+.q-tag.animaux { background: var(--coral); }
+.q-text { font-family: var(--font-display); font-weight: 600; font-size: clamp(1.4rem, 5.5vw, 1.9rem); line-height: 1.2; text-wrap: balance; margin: 0; }
+.choices { display: grid; grid-template-columns: 1fr; gap: .6rem; }
+@media (min-width: 34rem) { .choices { grid-template-columns: 1fr 1fr; } }
+.choice {
+  display: flex; align-items: center; gap: .75rem; text-align: left;
+  min-height: 3.6rem; padding: .6rem .9rem; border-radius: 1rem;
+  background: var(--surface-2); color: var(--fg); border: 2px solid var(--line);
+  font-weight: 800; font-size: 1.05rem; line-height: 1.25;
+}
+.choice:hover:not(:disabled) { border-color: var(--sky); }
+.choice .n { flex: none; display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: var(--surface); border: 2px solid var(--line); font-family: var(--font-display); font-size: .95rem; }
+.choice:disabled { cursor: default; }
+.choice.right { background: rgba(74, 222, 154, .22); border-color: var(--good); }
+.choice.right .n { background: var(--good); border-color: var(--good); color: var(--ink); }
+.choice.wrong { background: rgba(255, 139, 139, .18); border-color: var(--bad); }
+.choice.wrong .n { background: var(--bad); border-color: var(--bad); color: var(--ink); }
+.choice.dim { opacity: .55; }
+.fb { min-height: 1.5rem; font-weight: 800; font-size: 1.1rem; }
+.fb.good { color: var(--good); }
+.fb.bad { color: var(--bad); }
+.why { background: var(--surface-2); border-left: 4px solid var(--sun); border-radius: .6rem; padding: .6rem .9rem; color: var(--fg); }
+.why b { color: var(--sun); }
+.q-actions { display: flex; justify-content: center; }
+.play-foot { display: flex; justify-content: center; margin-top: auto; }
+.link-btn { background: none; border: 0; color: var(--muted); text-decoration: underline; padding: .4rem 0; }
+
+/* Résultat de fin de partie */
+.result-time { font-family: var(--font-display); font-size: clamp(2.6rem, 13vw, 4rem); line-height: 1; font-variant-numeric: tabular-nums; color: var(--sun); }
+.record { display: inline-block; background: var(--sun); color: var(--ink); font-weight: 800; border-radius: 999px; padding: .15rem .8rem; font-size: .9rem; }
+.result-lines { display: flex; flex-direction: column; gap: .2rem; color: var(--muted); }
+.retenir { width: 100%; text-align: left; background: var(--surface-2); border: 2px dashed var(--line); border-radius: 1rem; padding: .8rem 1rem; display: flex; flex-direction: column; gap: .5rem; }
+.retenir h3 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; color: var(--sun); }
+.retenir p { font-size: .95rem; }
+.retenir p b { color: var(--leaf); }
+
+/* Voiles : pause et récompense */
+.cover {
+  position: absolute; inset: 0; z-index: 2; border-radius: inherit;
+  background: rgba(11, 31, 28, .985);
+  display: flex; flex-direction: column; align-items: center; justify-content: safe center; gap: 1rem; padding: 1.25rem; text-align: center;
+  overflow-y: auto;
+}
+.cover[hidden] { display: none; }
+.pop { animation: pop .45s cubic-bezier(.2, 1.4, .4, 1) both; }
+@keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* Badges (icônes dessinées au trait) */
+.badge-ic {
+  width: 5.2rem; aspect-ratio: 1; max-width: 100%; border-radius: 50%;
+  display: grid; place-items: center; overflow: hidden;
+  color: var(--c, var(--leaf)); background: var(--surface-2); border: 3px solid currentColor;
+}
+@supports (background: color-mix(in srgb, red 10%, blue)) {
+  .badge-ic { background: color-mix(in srgb, currentColor 20%, var(--surface)); }
+}
+.badge-ic svg { width: 58%; height: 58%; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.badge-ic .q { font-family: var(--font-display); font-size: 2.4rem; line-height: 1; }
+.badge-ic.big { width: 9rem; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.2rem, 1fr)); gap: .8rem; }
+.badge { display: flex; flex-direction: column; align-items: center; gap: .4rem; text-align: center; background: var(--surface); border: 2px solid var(--line); border-radius: 1rem; padding: .9rem .5rem; min-width: 0; }
+.badge .name { font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; }
+.badge .need { font-size: .85rem; color: var(--muted); }
+.badge.locked .badge-ic { color: var(--muted); opacity: .5; border-style: dashed; }
+.badge.locked .name { color: var(--muted); }
+.badge.next { border-color: var(--leaf); }
+.section { display: flex; flex-direction: column; gap: .9rem; }
+.section-head { display: flex; flex-direction: column; gap: .2rem; }
+.hint { color: var(--muted); font-size: .95rem; }
+
+/* Historique */
+.bars { display: flex; align-items: flex-end; gap: .4rem; height: 7rem; padding: .6rem; background: var(--surface); border: 2px solid var(--line); border-radius: 1rem; }
+.bars .bar { flex: 1; min-width: 0; border-radius: .35rem .35rem 0 0; background: var(--violet); }
+.bars .bar.best { background: var(--leaf); }
+.hist-wrap { overflow-x: auto; background: var(--surface); border: 2px solid var(--line); border-radius: 1rem; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: .65rem .9rem; white-space: nowrap; }
+th { font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); border-bottom: 2px solid var(--line); }
+tbody tr + tr td { border-top: 1px solid var(--line); }
+td.t { font-weight: 800; color: var(--sun); }
+.pill { display: inline-block; background: var(--leaf); color: var(--ink); font-weight: 800; font-size: .75rem; border-radius: 999px; padding: .05rem .6rem; margin-left: .4rem; }
+.empty { background: var(--surface); border: 2px dashed var(--line); border-radius: 1rem; padding: 1.5rem 1rem; text-align: center; color: var(--muted); }
+.reset-row { display: flex; justify-content: flex-end; }
+
+/* Pousse : halo vert et feuille affichés à chaque bonne réponse */
+.pousse { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; pointer-events: none; opacity: 0; }
+.pousse.on { animation: pousse-flash 1s ease-out both; }
+.pousse-ring {
+  position: relative; width: min(240px, 60vw); aspect-ratio: 1; border-radius: 50%;
+  display: grid; place-items: center;
+  background: radial-gradient(circle, rgba(110, 231, 160, .32) 0%, rgba(110, 231, 160, .1) 70%, transparent 100%);
+  box-shadow: 0 0 28px rgba(110, 231, 160, .8), inset 0 0 26px rgba(110, 231, 160, .55);
+  border: 3px solid rgba(160, 255, 200, .9);
+}
+.pousse-ring::before {
+  content: ""; position: absolute; inset: -10px; border-radius: 50%;
+  border: 2px dashed rgba(255, 224, 140, .75); animation: pousse-tour 6s linear infinite;
+}
+.pousse-ring svg { width: 46%; height: 46%; fill: none; stroke: #eafff3; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; animation: pousse-feuille 1s ease-out both; }
+@keyframes pousse-flash { 0% { opacity: 0; transform: scale(.7); } 20% { opacity: 1; transform: scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: scale(1.15); } }
+@keyframes pousse-fade { 0% { opacity: 0; } 20% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes pousse-tour { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes pousse-feuille { 0% { transform: scale(.2) rotate(-40deg); } 60% { transform: scale(1.15) rotate(8deg); } 100% { transform: scale(1) rotate(0deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pop { animation: none; }
+  .segs span { transition: none; }
+  .pousse.on { animation: pousse-fade 1s ease-out both; }
+  .pousse-ring::before, .pousse-ring svg { animation: none; }
+}
+</style>
+
+<script src="https://hipslejaune.github.io/salle-de-jeux/salle-jeu.js"></script>
+<script src="questions.js"></script>
+</head>
+<body>
+<main>
+  <header>
+    <span class="eyebrow">Sciences</span>
+    <h1>La <em>Terre</em> et les animaux</h1>
+    <p class="lead">Choisis la bonne réponse. Réussis 10 bonnes réponses le plus vite possible, apprends une chose à chaque question, et débloque de nouveaux badges au fil des paliers.</p>
+  </header>
+
+  <section class="themes" aria-labelledby="t-label">
+    <span class="label" id="t-label">Thème</span>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="play" id="play" aria-label="Partie en cours">
+    <div class="hud">
+      <div><span class="label">Temps</span><span class="clock-val" id="clock">0:00.0</span></div>
+      <div><span class="label">Bonnes réponses</span><span class="score-val"><span id="score">0</span> <small>/ 10</small></span></div>
+      <button class="ghost" id="pauseBtn" type="button" hidden>Pause</button>
+    </div>
+    <div class="segs" id="segs" aria-hidden="true"></div>
+
+    <div class="stage" id="stageStart">
+      <p class="rule">Le chrono démarre au premier clic. Il s'arrête pendant que tu lis l'explication. Une erreur ne coûte rien : tu apprends la bonne réponse.</p>
+      <button class="big-btn" id="startBtn" type="button">C'est parti !</button>
+    </div>
+
+    <div class="stage" id="stageQ" hidden>
+      <span class="q-tag" id="qTag"></span>
+      <p class="q-text" id="qText"></p>
+      <div class="choices" id="choices" role="group" aria-labelledby="qText"></div>
+      <div class="fb" id="fb" role="status" aria-live="polite"></div>
+      <p class="why" id="why" hidden></p>
+      <div class="q-actions"><button class="big-btn alt" id="nextBtn" type="button" hidden>Suite</button></div>
+    </div>
+
+    <div class="stage" id="stageDone" hidden>
+      <span class="label">Partie terminée</span>
+      <div class="result-time" id="rTime">0:00.0</div>
+      <div id="rRecord"></div>
+      <div class="result-lines" id="rLines"></div>
+      <div class="retenir" id="retenir" hidden></div>
+      <button class="big-btn" id="againBtn" type="button">Rejouer</button>
+    </div>
+
+    <div class="play-foot" id="musicFoot" hidden><button class="link-btn" id="musicBtn" type="button" aria-pressed="true">♪ Musique : activée</button></div>
+
+    <div class="cover" id="pauseCover" hidden>
+      <h2>Pause</h2>
+      <p class="rule">Le chrono est arrêté. La question est cachée jusqu'à la reprise.</p>
+      <button class="big-btn alt" id="resumeBtn" type="button">Reprendre</button>
+    </div>
+
+    <div class="cover" id="reward" hidden>
+      <span class="eyebrow">Nouveau palier</span>
+      <div class="badge-ic big pop" id="rewardIc"></div>
+      <h2 id="rewardName"></h2>
+      <p class="rule" id="rewardText"></p>
+      <button class="big-btn" id="rewardBtn" type="button">Continuer</button>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="b-title">
+    <div class="section-head">
+      <h2 id="b-title">Les badges</h2>
+      <p class="hint" id="badgeHint"></p>
+    </div>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <section class="section" aria-labelledby="h-title">
+    <div class="section-head">
+      <h2 id="h-title">Historique des temps</h2>
+      <p class="hint">Temps mis pour réussir 10 bonnes réponses (hors lecture des explications).</p>
+    </div>
+    <div id="histBox"></div>
+  </section>
+</main>
+<audio id="music" src="audio/musique.mp3" loop preload="metadata"></audio>
+<div class="pousse" id="pousse" aria-hidden="true"><div class="pousse-ring"><svg viewBox="0 0 24 24"><path d="M5 19C5 9 11 4 20 4c0 9-5 15-15 15zM5 19l8-8"/></svg></div></div>
+
+<script>
+SalleJeu.demarrer("sciences-terre-animaux", function (etatDB) {
+  "use strict";
+  var TARGET = 10;
+  var QUESTIONS = (window.SCIENCES_QUESTIONS || []).map(function (r) {
+    return { id: r[0], cat: r[0].charAt(0) === "t" ? "terre" : "animaux", text: r[1], good: r[2][0], opts: r[2], why: r[3] };
+  });
+  var THEMES = [{ id: "tout", label: "Tout" }, { id: "terre", label: "La Terre" }, { id: "animaux", label: "Les animaux" }];
+  var CAT_LABEL = { terre: "La Terre", animaux: "Les animaux" };
+
+  /* Icônes de badges : dessinées au trait dans une grille de 24 */
+  var ICONS = {
+    globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3.2 3.2 3.2 14.8 0 18M12 3c-3.2 3.2-3.2 14.8 0 18"/>',
+    soleil: '<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2.1 2.1M16.9 16.9L19 19M19 5l-2.1 2.1M7.1 16.9L5 19"/>',
+    goutte: '<path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/><path d="M9 15a3 3 0 0 0 3 3"/>',
+    feuille: '<path d="M5 19C5 9 11 4 20 4c0 9-5 15-15 15z"/><path d="M5 19l8-8"/>',
+    papillon: '<path d="M12 6v13"/><path d="M12 12C10 4 3 3 3.500 9c.4 3 4.500 4 8.500 3zM12 12c2-8 9-9 8.500-3-.4 3-4.500 4-8.500 3z"/><path d="M12 13c-2 1.500-6 2-5.500 5 .5 2.500 4 1.500 5.500-5zM12 13c2 1.500 6 2 5.500 5-.5 2.500-4 1.500-5.500-5z"/><path d="M12 6c-.5-1.500-1.500-2.500-2.500-3M12 6c.5-1.500 1.500-2.500 2.500-3"/>',
+    poisson: '<path d="M3 12c4-6 11-6 14 0-3 6-10 6-14 0zM17 12l4-4v8z"/><circle cx="8" cy="11" r=".6"/>',
+    patte: '<path d="M8 17c0-3 2-4 4-4s4 1 4 4c0 2-2 2.5-4 2.5S8 19 8 17z"/><circle cx="5.5" cy="11" r="1.7"/><circle cx="9.5" cy="6.8" r="1.7"/><circle cx="14.5" cy="6.8" r="1.7"/><circle cx="18.5" cy="11" r="1.7"/>',
+    volcan: '<path d="M3 20l6-11h6l6 11z"/><path d="M10 9l-1-4M12 9V3.5M14 9l1-4M9 15h6"/>',
+    montagne: '<path d="M2 20l7-13 4 7 3-4 6 10z"/><path d="M9 7l-2 3 2-1 1.5 2"/>',
+    lune: '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/><path d="M16 5v3M14.5 6.5h3"/>',
+    flocon: '<path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7"/><path d="M9.5 3.8L12 6l2.5-2.2M9.5 20.2L12 18l2.5 2.2"/>',
+    arbre: '<path d="M12 21v-6"/><path d="M12 15c-4.5 0-6.5-3-5.5-6C4.5 7 5.5 3.5 9 3.5c1-1.5 5-1.5 6 0 3.5 0 4.5 3.5 2.5 5.5 1 3-1 6-5.500 6z"/>',
+    coquillage: '<path d="M3 18a9 9 0 0 1 18 0z"/><path d="M12 9v9M7.2 11.2L9.5 18M16.8 11.2L14.5 18M6 21h12"/>',
+    tortue: '<path d="M5 15a7 7 0 0 1 14 0z"/><path d="M12 8.5V15M8.5 10l1.5 5M15.5 10L14 15"/><path d="M19 12.5l3-1M7.500 15l-1.500 3M16.500 15l1.500 3M5 15l-2.500 1"/>',
+    baleine: '<path d="M2 13c0-4.500 4.500-7 9.500-5.500C15 8.500 16.500 11 17 13l4.500-3.500c.5 4-1.500 8-5 8.500H8c-3.500 0-6-1.800-6-5z"/><circle cx="7" cy="11.500" r=".6"/><path d="M12 4V2M12 4l-1.500-1M12 4l1.500-1"/>',
+    escargot: '<circle cx="14" cy="11" r="5"/><path d="M14 11a2 2 0 1 0-2-2"/><path d="M3 19h14c3 0 4-2 4-4"/><path d="M3 19c0-2.500 1-4 3-5M5.500 12.500L4 9M8 12l-.5-4"/>',
+    oiseau: '<path d="M4 15c0-4.500 3-8 7-8 1.800 0 3 .8 4 2l5 1.500-4.500 2.500c-.5 4-3.500 6.500-7.500 6.500-2.500 0-4-1.500-4-4.500z"/><path d="M8 14c2.500.5 4.500-.5 6-2.500"/><circle cx="14" cy="10" r=".6"/><path d="M9 20.500l-1 1.500M12 20.500l.5 1.500"/>',
+    planete: '<circle cx="12" cy="12" r="5"/><ellipse cx="12" cy="12" rx="10.500" ry="3.500" transform="rotate(-20 12 12)"/>',
+    etoile: '<path d="M12 2.500l2.900 6.100 6.600.8-4.900 4.500 1.300 6.600L12 17.200 6.100 20.500l1.300-6.600L2.500 9.400l6.600-.8z"/>',
+    trophee: '<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H3.500c0 4 1.800 5 3.700 5M17 6h3.500c0 4-1.800 5-3.700 5M12 14v4M8 21h8M10 18h4"/>'
+  };
+  var COLORS = ["--leaf", "--sky", "--sun", "--coral", "--violet"];
+  /* Chaque palier est un nombre total de bonnes réponses, toutes parties confondues. */
+  var BADGES = [
+    { at: 10, name: "Globe-trotteur", icon: "globe" },
+    { at: 20, name: "Rayon de soleil", icon: "soleil" },
+    { at: 30, name: "Goutte d'eau", icon: "goutte" },
+    { at: 40, name: "Jeune pousse", icon: "feuille" },
+    { at: 50, name: "Papillon", icon: "papillon" },
+    { at: 60, name: "Petit poisson", icon: "poisson" },
+    { at: 70, name: "Pisteur d'empreintes", icon: "patte" },
+    { at: 80, name: "Volcan en éruption", icon: "volcan" },
+    { at: 90, name: "Alpiniste", icon: "montagne" },
+    { at: 100, name: "Clair de lune", icon: "lune" },
+    { at: 110, name: "Flocon polaire", icon: "flocon" },
+    { at: 120, name: "Grand chêne", icon: "arbre" },
+    { at: 130, name: "Plongeur", icon: "coquillage" },
+    { at: 140, name: "Tortue sage", icon: "tortue" },
+    { at: 150, name: "Baleine bleue", icon: "baleine" },
+    { at: 160, name: "Escargot courageux", icon: "escargot" },
+    { at: 170, name: "Oiseau migrateur", icon: "oiseau" },
+    { at: 180, name: "Astronome", icon: "planete" },
+    { at: 190, name: "Étoile du soir", icon: "etoile" },
+    { at: 200, name: "Exploratrice de la nature", icon: "trophee" }
+  ];
+
+  function defaults() { return { total: 0, history: [], theme: "tout", music: true, ratees: [] }; }
+  var store = load();
+  function load() {
+    var d = defaults();
+    try {
+      var o = etatDB;   /* progression de l'enfant, lue dans la base par la salle de jeux */
+      if (o && typeof o === "object") {
+        if (typeof o.total === "number" && o.total >= 0) d.total = Math.floor(o.total);
+        if (Array.isArray(o.history)) d.history = o.history.filter(function (h) { return h && typeof h.t === "number"; }).slice(-30);
+        if (o.theme === "tout" || o.theme === "terre" || o.theme === "animaux") d.theme = o.theme;
+        if (typeof o.music === "boolean") d.music = o.music;
+        if (Array.isArray(o.ratees)) d.ratees = o.ratees.filter(function (x) { return typeof x === "string"; }).slice(-20);
+      }
+    } catch (e) {}
+    return d;
+  }
+  function save() { SalleJeu.sauver(store); }
+
+  function $(id) { return document.getElementById(id); }
+  var els = {
+    chips: $("chips"), clock: $("clock"), score: $("score"), segs: $("segs"), pauseBtn: $("pauseBtn"),
+    stageStart: $("stageStart"), stageQ: $("stageQ"), stageDone: $("stageDone"),
+    qTag: $("qTag"), qText: $("qText"), choices: $("choices"), fb: $("fb"), why: $("why"), nextBtn: $("nextBtn"),
+    startBtn: $("startBtn"), againBtn: $("againBtn"),
+    rTime: $("rTime"), rRecord: $("rRecord"), rLines: $("rLines"), retenir: $("retenir"),
+    pauseCover: $("pauseCover"), resumeBtn: $("resumeBtn"),
+    reward: $("reward"), rewardIc: $("rewardIc"), rewardName: $("rewardName"), rewardText: $("rewardText"), rewardBtn: $("rewardBtn"),
+    gallery: $("gallery"), badgeHint: $("badgeHint"), histBox: $("histBox"), musicBtn: $("musicBtn"), musicFoot: $("musicFoot"), music: $("music")
+  };
+
+  /* Musique (optionnelle) : le bouton n'apparaît que si le fichier audio existe. Démarre après un clic, en boucle, volume doux. */
+  els.music.volume = 0.3;
+  els.music.addEventListener("loadedmetadata", function () { els.musicFoot.hidden = false; });
+  els.music.addEventListener("error", function () { els.musicFoot.hidden = true; });
+  function syncMusic() {
+    var on = store.music && !document.hidden && (state === "playing" || state === "reward" || state === "done");
+    if (on) { var pr = els.music.play(); if (pr && pr.catch) pr.catch(function () {}); }
+    else { els.music.pause(); }
+  }
+  function renderMusicBtn() {
+    els.musicBtn.textContent = "♪ Musique : " + (store.music ? "activée" : "coupée");
+    els.musicBtn.setAttribute("aria-pressed", String(store.music));
+  }
+  els.musicBtn.addEventListener("click", function () { store.music = !store.music; save(); renderMusicBtn(); syncMusic(); });
+
+  /* Chrono : il s'arrête pendant la lecture de l'explication */
+  var elapsed = 0, segStart = 0, running = false;
+  function now() { return performance.now(); }
+  function startTimer() { if (!running) { segStart = now(); running = true; } }
+  function stopTimer() { if (running) { elapsed += now() - segStart; running = false; } }
+  function getTime() { return elapsed + (running ? now() - segStart : 0); }
+  function fmt(ms) {
+    var tenths = Math.floor(ms / 100), m = Math.floor(tenths / 600), s = Math.floor((tenths % 600) / 10), d = tenths % 10;
+    return m + ":" + (s < 10 ? "0" : "") + s + "." + d;
+  }
+  setInterval(function () { els.clock.textContent = fmt(getTime()); }, 100);
+
+  /* Partie */
+  var state = "idle", correct = 0, errors = 0, q = null, last = null, busy = false, missed = [], seen = [], wait = null, roundWrong = [];
+  function rnd(n) { return Math.floor(Math.random() * n); }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = rnd(i + 1), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function pool() { return QUESTIONS.filter(function (x) { return store.theme === "tout" || x.cat === store.theme; }); }
+  function byId(id) { for (var i = 0; i < QUESTIONS.length; i++) if (QUESTIONS[i].id === id) return QUESTIONS[i]; return null; }
+  function newQuestion() {
+    var p = pool(), cand = null;
+    if (missed.length && Math.random() < 0.3) {
+      var cm = missed.filter(function (x) { return !last || x.id !== last.id; });
+      if (cm.length) cand = cm[rnd(cm.length)];
+    }
+    if (!cand) {
+      var fresh = p.filter(function (x) { return seen.indexOf(x.id) < 0 && (!last || x.id !== last.id); });
+      if (!fresh.length) { seen = []; fresh = p.filter(function (x) { return !last || x.id !== last.id; }); }
+      cand = fresh[rnd(fresh.length)] || p[0];
+    }
+    return cand;
+  }
+  function show(stage) {
+    els.stageStart.hidden = stage !== "start";
+    els.stageQ.hidden = stage !== "q";
+    els.stageDone.hidden = stage !== "done";
+    els.pauseBtn.hidden = stage !== "q";
+  }
+  function setChipsDisabled(v) { var b = els.chips.querySelectorAll("button"); for (var i = 0; i < b.length; i++) b[i].disabled = v; }
+  function renderSegs() {
+    els.segs.textContent = "";
+    for (var i = 0; i < TARGET; i++) { var s = document.createElement("span"); if (i < correct) s.className = "on"; els.segs.appendChild(s); }
+    els.score.textContent = correct;
+  }
+  function showQuestion() {
+    q = newQuestion(); last = q; busy = false;
+    if (seen.indexOf(q.id) < 0) seen.push(q.id);
+    els.qTag.textContent = CAT_LABEL[q.cat]; els.qTag.className = "q-tag " + q.cat;
+    els.qText.textContent = q.text;
+    els.choices.textContent = "";
+    shuffle(q.opts).forEach(function (txt, i) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "choice"; b.setAttribute("data-v", txt);
+      var n = document.createElement("span"); n.className = "n"; n.setAttribute("aria-hidden", "true"); n.textContent = String(i + 1);
+      var t = document.createElement("span"); t.textContent = txt;
+      b.appendChild(n); b.appendChild(t);
+      b.addEventListener("click", function () { choose(b, txt); });
+      els.choices.appendChild(b);
+    });
+    els.fb.textContent = ""; els.fb.className = "fb"; els.why.hidden = true; els.nextBtn.hidden = true;
+    startTimer();
+  }
+  function startRound() {
+    clearTimeout(wait);
+    correct = 0; errors = 0; last = null; seen = []; roundWrong = []; elapsed = 0; running = false;
+    var ids = pool().map(function (x) { return x.id; });
+    missed = store.ratees.filter(function (id) { return ids.indexOf(id) >= 0; }).slice(-5).map(byId).filter(Boolean);
+    els.pauseCover.hidden = true; els.reward.hidden = true;
+    state = "playing"; setChipsDisabled(true); renderSegs(); show("q");
+    showQuestion(); syncMusic();
+  }
+  function explain(ok) {
+    els.why.textContent = "";
+    var b = document.createElement("b"); b.textContent = ok ? "Le savais-tu ? " : "À retenir : ";
+    els.why.appendChild(b);
+    els.why.appendChild(document.createTextNode(ok ? q.why : "la bonne réponse est « " + q.good + " ». " + q.why));
+    els.why.hidden = false;
+  }
+  function choose(btn, txt) {
+    if (state !== "playing" || busy) return;
+    busy = true; stopTimer();
+    var all = els.choices.querySelectorAll("button");
+    for (var i = 0; i < all.length; i++) {
+      all[i].disabled = true;
+      if (all[i].getAttribute("data-v") === q.good) all[i].classList.add("right");
+      else if (all[i] !== btn) all[i].classList.add("dim");
+    }
+    if (txt === q.good) {
+      correct++; store.total++;
+      store.ratees = store.ratees.filter(function (id) { return id !== q.id; });
+      missed = missed.filter(function (m) { return m.id !== q.id; });
+      els.fb.className = "fb good";
+      els.fb.textContent = ["Bravo !", "Exact !", "Super !", "Bien joué !", "Parfait !"][rnd(5)];
+      explain(true);
+      if (window.Plume && correct < TARGET) { if (correct % 3 === 0) Plume.reussite(); else Plume.oui(); }
+      renderSegs(); save(); showPousse(); renderBadges();
+      var badge = null;
+      for (var k = 0; k < BADGES.length; k++) if (BADGES[k].at === store.total) badge = BADGES[k];
+      if (correct >= TARGET) { state = "ending"; wait = setTimeout(function () { finishRound(badge); }, 1700); }
+      else if (badge) { state = "reward"; wait = setTimeout(function () { openReward(badge); }, 1500); }
+      else { wait = setTimeout(next, 2800); els.nextBtn.hidden = false; }
+    } else {
+      btn.classList.add("wrong");
+      errors++;
+      if (window.Plume) Plume.erreur();
+      if (!missed.some(function (m) { return m.id === q.id; })) missed.push(q);
+      if (store.ratees.indexOf(q.id) < 0) store.ratees.push(q.id);
+      store.ratees = store.ratees.slice(-20);
+      if (!roundWrong.some(function (m) { return m.id === q.id; })) roundWrong.push(q);
+      els.fb.className = "fb bad"; els.fb.textContent = "Presque !";
+      explain(false); save();
+      els.nextBtn.hidden = false; els.nextBtn.focus();
+    }
+  }
+  function next() {
+    clearTimeout(wait);
+    if (state !== "playing" || !busy) return;
+    showQuestion();
+  }
+  function finishRound(badge) {
+    state = "done";
+    var t = getTime();
+    var prev = store.history.length ? Math.min.apply(null, store.history.map(function (h) { return h.t; })) : null;
+    store.history.push({ t: Math.round(t), err: errors, d: Date.now(), theme: store.theme });
+    SalleJeu.partie({ score: TARGET, details: { t: Math.round(t), err: errors, theme: store.theme } });
+    if (store.history.length > 30) store.history = store.history.slice(-30);
+    save();
+    els.rTime.textContent = fmt(t);
+    els.rRecord.textContent = "";
+    var lines = [];
+    if (prev === null) { lines.push("C'est ton premier temps. Il sert de point de départ."); }
+    else if (t < prev) { var r = document.createElement("span"); r.className = "record"; r.textContent = "Nouveau record !"; els.rRecord.appendChild(r); lines.push("Ton ancien record était " + fmt(prev) + "."); }
+    else { lines.push("Ton record est de " + fmt(prev) + "."); }
+    lines.push(errors === 0 ? "Aucune erreur, bravo !" : (errors === 1 ? "1 erreur pendant la partie." : errors + " erreurs pendant la partie."));
+    els.rLines.textContent = "";
+    lines.forEach(function (l) { var p = document.createElement("p"); p.textContent = l; els.rLines.appendChild(p); });
+    els.retenir.textContent = "";
+    if (roundWrong.length) {
+      var h = document.createElement("h3"); h.textContent = "À retenir"; els.retenir.appendChild(h);
+      roundWrong.slice(0, 3).forEach(function (m) {
+        var p = document.createElement("p"), b = document.createElement("b");
+        b.textContent = m.good + ". ";
+        p.appendChild(document.createTextNode(m.text + " ")); p.appendChild(b); p.appendChild(document.createTextNode(m.why));
+        els.retenir.appendChild(p);
+      });
+      els.retenir.hidden = false;
+    } else { els.retenir.hidden = true; }
+    setChipsDisabled(false); show("done"); renderHistory(); renderBadges();
+    if (badge) { wait = setTimeout(function () { openReward(badge); }, 700); }
+  }
+
+  var pousse = $("pousse"), pousseTimer = null;
+  function showPousse() {
+    if (!pousse) return;
+    pousse.classList.remove("on"); void pousse.offsetWidth; pousse.classList.add("on");
+    clearTimeout(pousseTimer);
+    pousseTimer = setTimeout(function () { pousse.classList.remove("on"); }, 1000);
+  }
+
+  /* Pause et récompense */
+  function pause() {
+    if (state !== "playing" || busy) return;
+    stopTimer(); state = "paused"; els.pauseCover.hidden = false; els.resumeBtn.focus(); syncMusic();
+  }
+  function resume() {
+    if (state !== "paused") return;
+    els.pauseCover.hidden = true; state = "playing"; startTimer(); syncMusic();
+  }
+  function badgeVisual(b, host) {
+    host.textContent = "";
+    var idx = BADGES.indexOf(b);
+    host.style.setProperty("--c", "var(" + COLORS[idx % COLORS.length] + ")");
+    var ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("aria-hidden", "true");
+    svg.innerHTML = ICONS[b.icon] || "";
+    host.appendChild(svg);
+  }
+  function openReward(b) {
+    badgeVisual(b, els.rewardIc);
+    els.rewardName.textContent = b.name;
+    els.rewardText.textContent = "Tu as réussi " + b.at + " bonnes réponses en tout. Ce badge est à toi !";
+    els.reward.hidden = false; els.rewardBtn.focus();
+  }
+  function closeReward() {
+    els.reward.hidden = true;
+    if (state === "reward") { state = "playing"; showQuestion(); }
+    else if (state === "done") { els.againBtn.focus(); }
+  }
+
+  /* Affichages */
+  function renderChips() {
+    els.chips.textContent = "";
+    THEMES.forEach(function (th) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "chip"; b.textContent = th.label;
+      b.setAttribute("aria-pressed", String(store.theme === th.id));
+      b.addEventListener("click", function () { store.theme = th.id; save(); renderChips(); });
+      els.chips.appendChild(b);
+    });
+    setChipsDisabled(state === "playing" || state === "paused" || state === "reward" || state === "ending");
+  }
+  function renderBadges() {
+    var next = null;
+    for (var i = 0; i < BADGES.length; i++) if (BADGES[i].at > store.total) { next = BADGES[i]; break; }
+    els.badgeHint.textContent = next
+      ? "Total : " + store.total + " bonnes réponses. Prochain badge dans " + (next.at - store.total) + "."
+      : "Total : " + store.total + " bonnes réponses. Tous les badges sont débloqués !";
+    els.gallery.textContent = "";
+    BADGES.forEach(function (b) {
+      var unlocked = store.total >= b.at;
+      var card = document.createElement("div");
+      card.className = "badge" + (unlocked ? "" : " locked") + (next === b ? " next" : "");
+      var ic = document.createElement("div"); ic.className = "badge-ic";
+      if (unlocked) { badgeVisual(b, ic); }
+      else { var qm = document.createElement("span"); qm.className = "q"; qm.textContent = "?"; qm.setAttribute("aria-hidden", "true"); ic.appendChild(qm); }
+      var name = document.createElement("div"); name.className = "name"; name.textContent = unlocked ? b.name : "Badge mystère";
+      var need = document.createElement("div"); need.className = "need"; need.textContent = unlocked ? "Débloqué" : "à " + b.at + " bonnes réponses";
+      card.appendChild(ic); card.appendChild(name); card.appendChild(need);
+      els.gallery.appendChild(card);
+    });
+  }
+  function themeLabel(id) { for (var i = 0; i < THEMES.length; i++) if (THEMES[i].id === id) return THEMES[i].label; return "Tout"; }
+  function fmtDate(ms) {
+    try { return new Date(ms).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); }
+    catch (e) { return ""; }
+  }
+  function renderHistory() {
+    var h = store.history;
+    els.histBox.textContent = "";
+    if (!h.length) {
+      var e = document.createElement("div"); e.className = "empty";
+      e.textContent = "Aucune partie pour l'instant. Le premier temps apparaîtra ici.";
+      els.histBox.appendChild(e); return;
+    }
+    var best = Math.min.apply(null, h.map(function (x) { return x.t; }));
+    var recent = h.slice(-10), max = Math.max.apply(null, recent.map(function (x) { return x.t; }));
+    var bars = document.createElement("div"); bars.className = "bars"; bars.setAttribute("role", "img");
+    bars.setAttribute("aria-label", "Temps des " + recent.length + " dernières parties, du plus ancien au plus récent");
+    recent.forEach(function (x) {
+      var b = document.createElement("div"); b.className = "bar" + (x.t === best ? " best" : "");
+      b.style.height = Math.max(8, Math.round(x.t / max * 100)) + "%"; b.title = fmt(x.t);
+      bars.appendChild(b);
+    });
+    var cap = document.createElement("p"); cap.className = "hint"; cap.textContent = "Plus la barre est basse, plus la partie a été rapide. La barre verte est le record.";
+    var wrap = document.createElement("div"); wrap.className = "hist-wrap";
+    var tbl = document.createElement("table");
+    tbl.innerHTML = "<thead><tr><th>Date</th><th>Temps</th><th>Erreurs</th><th>Thème</th></tr></thead>";
+    var tb = document.createElement("tbody");
+    h.slice(-8).reverse().forEach(function (x) {
+      var tr = document.createElement("tr");
+      [fmtDate(x.d), fmt(x.t), String(x.err), themeLabel(x.theme)].forEach(function (txt, i) {
+        var td = document.createElement("td"); td.textContent = txt; if (i === 1) { td.className = "t"; if (x.t === best) { var p = document.createElement("span"); p.className = "pill"; p.textContent = "Record"; td.appendChild(p); } }
+        tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+    tbl.appendChild(tb); wrap.appendChild(tbl);
+    els.histBox.appendChild(bars); els.histBox.appendChild(cap); els.histBox.appendChild(wrap);
+  }
+
+  /* Raccourcis clavier : 1 à 4 pour répondre, Entrée pour la suite */
+  document.addEventListener("keydown", function (e) {
+    if (state !== "playing" || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (!busy && /^[1-4]$/.test(e.key)) {
+      var b = els.choices.querySelectorAll("button")[parseInt(e.key, 10) - 1];
+      if (b) { e.preventDefault(); b.click(); }
+    }
+  });
+  els.startBtn.addEventListener("click", startRound);
+  els.againBtn.addEventListener("click", startRound);
+  els.nextBtn.addEventListener("click", next);
+  els.pauseBtn.addEventListener("click", pause);
+  els.resumeBtn.addEventListener("click", resume);
+  els.rewardBtn.addEventListener("click", closeReward);
+  document.addEventListener("visibilitychange", function () { if (document.hidden) pause(); syncMusic(); });
+
+  renderChips(); renderSegs(); renderBadges(); renderHistory(); renderMusicBtn(); show("start");
+});
+</script>
+<script>document.addEventListener("contextmenu",function(e){e.preventDefault();});</script>
+</body>
+</html>
