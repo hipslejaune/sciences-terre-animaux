@@ -48,8 +48,9 @@ body {
   font-size: 1rem;
   line-height: 1.5;
   padding-inline: 1rem;
-  padding-block: 1.5rem 3rem;
+  padding-block: 1.5rem 9rem; /* le coin bas droit est réservé à Plume */
 }
+@media (max-width: 30rem) { body { padding-bottom: 6.5rem; } }
 /* Fond d'écran : l'image reste visible en entier, les côtés sont remplis par une version floue et sombre */
 body::before {
   content: ""; position: fixed; inset: -40px; z-index: -1;
@@ -244,6 +245,7 @@ td.t { font-weight: 800; color: var(--sun); }
     <div class="chips" id="ageChips"></div>
     <span class="label" id="t-label">Thème</span>
     <div class="chips" id="chips"></div>
+    <p class="hint" id="poolNote" role="status" hidden></p>
   </section>
 
   <section class="play" id="play" aria-label="Partie en cours">
@@ -410,7 +412,7 @@ SalleJeu.demarrer("sciences-terre-animaux", function (etatDB, enfant) {
 
   function $(id) { return document.getElementById(id); }
   var els = {
-    chips: $("chips"), ageChips: $("ageChips"), clock: $("clock"), score: $("score"), segs: $("segs"), pauseBtn: $("pauseBtn"),
+    chips: $("chips"), ageChips: $("ageChips"), poolNote: $("poolNote"), clock: $("clock"), score: $("score"), segs: $("segs"), pauseBtn: $("pauseBtn"),
     stageStart: $("stageStart"), stageQ: $("stageQ"), stageDone: $("stageDone"),
     qTag: $("qTag"), qText: $("qText"), choices: $("choices"), fb: $("fb"), why: $("why"), nextBtn: $("nextBtn"),
     startBtn: $("startBtn"), againBtn: $("againBtn"),
@@ -448,13 +450,20 @@ SalleJeu.demarrer("sciences-terre-animaux", function (etatDB, enfant) {
   setInterval(function () { els.clock.textContent = fmt(getTime()); }, 100);
 
   /* Partie */
-  var state = "idle", correct = 0, errors = 0, q = null, last = null, busy = false, missed = [], seen = [], wait = null, roundWrong = [], roundAges = [];
+  var state = "idle", correct = 0, errors = 0, q = null, last = null, busy = false, missed = [], seen = [], wait = null, autoNext = false, roundWrong = [], roundAges = [];
   function rnd(n) { return Math.floor(Math.random() * n); }
   function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = rnd(i + 1), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  var POOL_MIN = 5;
   function pool() {
     var byTheme = QUESTIONS.filter(function (x) { return store.theme === "tout" || x.cat === store.theme; });
     var p = byTheme.filter(function (x) { return store.ages.indexOf(x.age) !== -1; });
-    return p.length ? p : byTheme;   /* tranche sans question dans ce thème : on prend toutes les tranches */
+    return p.length >= POOL_MIN ? p : byTheme;   /* moins de 5 questions pour ces âges dans ce thème : toutes les tranches du thème */
+  }
+  function renderPoolNote() {
+    var byTheme = QUESTIONS.filter(function (x) { return store.theme === "tout" || x.cat === store.theme; });
+    var n = byTheme.filter(function (x) { return store.ages.indexOf(x.age) !== -1; }).length;
+    els.poolNote.hidden = n >= POOL_MIN;
+    els.poolNote.textContent = n >= POOL_MIN ? "" : "Pas assez de questions pour cet âge dans ce thème : toutes les tranches d'âge du thème sont proposées.";
   }
   function byId(id) { for (var i = 0; i < QUESTIONS.length; i++) if (QUESTIONS[i].id === id) return QUESTIONS[i]; return null; }
   function newQuestion() {
@@ -487,7 +496,7 @@ SalleJeu.demarrer("sciences-terre-animaux", function (etatDB, enfant) {
     els.score.textContent = correct;
   }
   function showQuestion() {
-    q = newQuestion(); last = q; busy = false;
+    q = newQuestion(); last = q; busy = false; autoNext = false;
     if (seen.indexOf(q.id) < 0) seen.push(q.id);
     if (roundAges.indexOf(q.age) < 0) roundAges.push(q.age);
     els.qTag.textContent = CAT_LABEL[q.cat] + " · " + ageLabel(q.age); els.qTag.className = "q-tag " + q.cat;
@@ -543,7 +552,7 @@ SalleJeu.demarrer("sciences-terre-animaux", function (etatDB, enfant) {
       for (var k = 0; k < BADGES.length; k++) if (BADGES[k].at === store.total) badge = BADGES[k];
       if (correct >= TARGET) { state = "ending"; wait = setTimeout(function () { finishRound(badge); }, 1700); }
       else if (badge) { state = "reward"; wait = setTimeout(function () { openReward(badge); }, 1500); }
-      else { wait = setTimeout(next, 2800); els.nextBtn.hidden = false; }
+      else { autoNext = true; wait = setTimeout(next, 2800); els.nextBtn.hidden = false; }
     } else {
       btn.classList.add("wrong");
       errors++;
@@ -605,12 +614,14 @@ SalleJeu.demarrer("sciences-terre-animaux", function (etatDB, enfant) {
 
   /* Pause et récompense */
   function pause() {
-    if (state !== "playing" || busy) return;
-    stopTimer(); state = "paused"; els.pauseCover.hidden = false; els.resumeBtn.focus(); syncMusic();
+    if (state !== "playing") return;
+    stopTimer(); clearTimeout(wait); state = "paused"; els.pauseCover.hidden = false; els.resumeBtn.focus(); syncMusic();
   }
   function resume() {
     if (state !== "paused") return;
-    els.pauseCover.hidden = true; state = "playing"; startTimer(); syncMusic();
+    els.pauseCover.hidden = true; state = "playing"; syncMusic();
+    if (!busy) startTimer();                                   /* le chrono reste arrêté pendant l'explication */
+    else if (autoNext) wait = setTimeout(next, 1500);          /* une bonne réponse était affichée : on enchaîne */
   }
   function badgeVisual(b, host) {
     host.textContent = "";
@@ -640,7 +651,7 @@ SalleJeu.demarrer("sciences-terre-animaux", function (etatDB, enfant) {
       var b = document.createElement("button");
       b.type = "button"; b.className = "chip"; b.textContent = th.label;
       b.setAttribute("aria-pressed", String(store.theme === th.id));
-      b.addEventListener("click", function () { store.theme = th.id; save(); renderChips(); });
+      b.addEventListener("click", function () { store.theme = th.id; save(); renderChips(); renderPoolNote(); });
       els.chips.appendChild(b);
     });
     setChipsDisabled(state === "playing" || state === "paused" || state === "reward" || state === "ending");
@@ -656,7 +667,7 @@ SalleJeu.demarrer("sciences-terre-animaux", function (etatDB, enfant) {
         if (i === -1) store.ages.push(a.id);
         else if (store.ages.length > 1) store.ages.splice(i, 1);
         store.ages = AGE_IDS.filter(function (x) { return store.ages.indexOf(x) !== -1; });
-        save(); renderAgeChips();
+        save(); renderAgeChips(); renderPoolNote();
       });
       els.ageChips.appendChild(b);
     });
@@ -727,7 +738,7 @@ SalleJeu.demarrer("sciences-terre-animaux", function (etatDB, enfant) {
     if (!busy && /^[1-4]$/.test(e.key)) {
       var b = els.choices.querySelectorAll("button")[parseInt(e.key, 10) - 1];
       if (b) { e.preventDefault(); b.click(); }
-    }
+    } else if (busy && e.key === "Enter" && !els.nextBtn.hidden && document.activeElement !== els.nextBtn) { e.preventDefault(); next(); }
   });
   els.startBtn.addEventListener("click", startRound);
   els.againBtn.addEventListener("click", startRound);
@@ -737,7 +748,7 @@ SalleJeu.demarrer("sciences-terre-animaux", function (etatDB, enfant) {
   els.rewardBtn.addEventListener("click", closeReward);
   document.addEventListener("visibilitychange", function () { if (document.hidden) pause(); syncMusic(); });
 
-  renderChips(); renderAgeChips(); renderSegs(); renderBadges(); renderHistory(); renderMusicBtn(); show("start");
+  renderChips(); renderAgeChips(); renderPoolNote(); renderSegs(); renderBadges(); renderHistory(); renderMusicBtn(); show("start");
 });
 </script>
 <script>document.addEventListener("contextmenu",function(e){e.preventDefault();});</script>

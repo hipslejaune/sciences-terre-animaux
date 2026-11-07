@@ -1,0 +1,228 @@
+{
+ "sortie": "sorties/jeux/sciences-terre-animaux",
+ "voix": {
+  "ref": "bibliotheque/plume-v05"
+ },
+ "lignes": [
+  {
+   "id": "regle",
+   "texte": "Le chrono démarre au premier clic. Il s'arrête pendant que tu lis l'explication. Une erreur ne coûte rien : tu apprends la bonne réponse.",
+   "prises": 1
+  },
+  {
+   "id": "presque",
+   "texte": "Presque !",
+   "prises": 1
+  },
+  {
+   "id": "pause",
+   "texte": "Pause. Le chrono est arrêté. La question est cachée jusqu'à la reprise.",
+   "prises": 1
+  },
+  {
+   "id": "palier",
+   "texte": "Nouveau palier ! Ce badge est à toi !",
+   "prises": 1
+  },
+  {
+   "id": "record",
+   "texte": "Nouveau record !",
+   "prises": 1
+  },
+  {
+   "id": "sans-erreur",
+   "texte": "Aucune erreur, bravo !",
+   "prises": 1
+  },
+  {
+   "id": "a-retenir",
+   "texte": "À retenir.",
+   "prises": 1
+  },
+  {
+   "id": "note-pool",
+   "texte": "Pas assez de questions pour cet âge : toutes les tranches d'âge sont proposées.",
+   "prises": 1
+  },
+  {
+   "id": "q-a40",
+   "texte": "Quel animal fait « miaou » ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a41",
+   "texte": "Quel animal fait « ouaf » ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a42",
+   "texte": "Quel animal fait « meuh » ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a43",
+   "texte": "Quel animal fait « coin-coin » ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a44",
+   "texte": "Quel animal fait « bêêê » ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a45",
+   "texte": "Quel animal fait « cocorico » ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a46",
+   "texte": "Quel animal a une très longue trompe ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a47",
+   "texte": "Quel animal a un très long cou ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a48",
+   "texte": "Quel animal a des rayures noires et blanches ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a49",
+   "texte": "Quel animal aime manger des carottes ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a50",
+   "texte": "Quel animal vit dans l'eau ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a51",
+   "texte": "Quel animal a des ailes et vole ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a52",
+   "texte": "Quel animal a une grande crinière ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a53",
+   "texte": "Quel animal nous donne du lait ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a54",
+   "texte": "Quel animal pond des œufs que l'on mange ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a55",
+   "texte": "Quel animal fabrique du miel ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a56",
+   "texte": "Quel animal avance en rampant, sans pattes ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a57",
+   "texte": "Quel animal porte sa maison sur son dos ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a58",
+   "texte": "Comment s'appelle le petit du chien ?",
+   "prises": 1
+  },
+  {
+   "id": "q-a59",
+   "texte": "Comment s'appelle le petit de la poule ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t40",
+   "texte": "Que voit-on dans le ciel la nuit ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t41",
+   "texte": "Quel astre nous donne de la lumière et de la chaleur ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t42",
+   "texte": "De quelle couleur est le ciel par beau temps ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t43",
+   "texte": "D'où tombe la pluie ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t44",
+   "texte": "Qu'est-ce qui est blanc et froid, et tombe du ciel en hiver ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t45",
+   "texte": "De quoi les plantes ont-elles besoin pour pousser ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t46",
+   "texte": "Quelle saison est la plus chaude ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t47",
+   "texte": "À quelle saison les feuilles des arbres tombent-elles ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t48",
+   "texte": "À quelle saison peut-il y avoir de la neige ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t50",
+   "texte": "Sur quelle planète vivons-nous ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t51",
+   "texte": "Comment est l'eau de la mer ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t52",
+   "texte": "Qu'est-ce qui sort d'un volcan en éruption ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t53",
+   "texte": "Quel est le contraire du jour ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t55",
+   "texte": "Que devient l'eau dans le congélateur ?",
+   "prises": 1
+  },
+  {
+   "id": "q-t56",
+   "texte": "Quand le Soleil se lève, c'est…",
+   "prises": 1
+  },
+  {
+   "id": "q-t57",
+   "texte": "De quelle couleur est l'herbe ?",
+   "prises": 1
+  }
+ ]
+}

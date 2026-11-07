@@ -12,5 +12,8 @@ Chaque question est classée dans une tranche : 3-6, 6-9, 9-12 ou 12-16 ans (170
 - `fond.jpg`, `favicon*`, `apple-touch-icon.png` : images
 - `audio/musique.mp3` (facultatif) : musique de fond, le bouton n'apparaît que si le fichier existe
 - `voix-plume/` : phrases de Plume (à venir)
+- `voix-a-generer.json` : phrases du jeu et consignes 3-6 ans à faire dire par Plume (format du studio de voix) ; tant qu'un mp3 manque, la phrase reste affichée en texte
 
 Progression enregistrée dans la salle de jeux.
+
+Cadre commun de la salle de jeux (modèle du 7 novembre 2026) : chrono arrêté pendant les explications, pause automatique quand l'onglet est masqué, questions ratées gardées d'une partie à l'autre (`ratees`, 20 max), note quand il y a moins de 5 questions pour l'âge choisi (toutes les tranches du thème sont alors proposées), encart « À retenir » en fin de partie, musique optionnelle `audio/musique.mp3`.
